@@ -1,0 +1,28 @@
+resources:
+- name: 10s
+  type: time
+  source: { interval: 10s }
+- name: git
+  type: git
+  source:
+    uri: https://github.com/concourse/concourse
+
+jobs:
+- name: hello-world
+  plan:
+  - aggregate:
+    - get: 10s
+      trigger: true
+    - get: git
+  - task: do work
+    config:
+      image_resource:
+        type: docker-image
+        source:
+          repository: ubuntu
+      platform: linux
+      run:
+        path: echo
+        args: [ "Hello, world!" ]
+  - do:
+    - put: 10s
