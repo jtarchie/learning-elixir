@@ -3,21 +3,32 @@ defmodule Concourse.Pipeline do
 
   defstruct [:jobs, :resources]
 
+  @type t :: %Concourse.Pipeline{
+          jobs: list(Concourse.Pipeline.Job.t()),
+          resources: list(Concourse.Pipeline.Resource.t())
+        }
+
+  @spec parse(String.t()) :: nil | Concourse.Pipeline.t()
   def parse(filename) do
     payload = YamlElixir.read_from_file(filename)
-    pipeline(payload)
+
+    case payload do
+       map when is_map(map) ->
+        %Concourse.Pipeline{
+          jobs: jobs(payload["jobs"]),
+          resources: resources(payload["resources"])
+        }
+
+      _ ->
+        nil
+    end
   end
 
+  @spec pipeline(map()) :: Concourse.Pipeline.t()
   defp pipeline(payload) do
-    %Concourse.Pipeline{
-      jobs: jobs(payload["jobs"]),
-      resources: resources(payload["resources"])
-    }
   end
 
-  defp resources(nil), do: []
-  defp resources([]), do: []
-
+  @spec resources(any()) :: list(Concourse.Pipeline.Resource.t())
   defp resources([resource | resources]) do
     [
       %Concourse.Pipeline.Resource{
@@ -29,9 +40,9 @@ defmodule Concourse.Pipeline do
     ]
   end
 
-  defp jobs(nil), do: []
-  defp jobs([]), do: []
+  defp resources(_), do: []
 
+  @spec jobs(any()) :: list(Concourse.Pipeline.Job.t())
   defp jobs([job | jobs]) do
     [
       %Concourse.Pipeline.Job{
@@ -41,4 +52,6 @@ defmodule Concourse.Pipeline do
       | jobs(jobs)
     ]
   end
+
+  defp jobs(_), do: []
 end

@@ -1,12 +1,34 @@
 defmodule Concourse.Pipeline.Job do
   defstruct [:name, :plan]
 
+  @type step ::
+          Concourse.Pipeline.Job.Aggregate.t()
+          | Concourse.Pipeline.Job.Do.t()
+          | Concourse.Pipeline.Job.Put.t()
+          | Concourse.Pipeline.Job.Get.t()
+          | Concourse.Pipeline.Job.Task.t()
+
+  @type steps :: list(step)
+
+  @type t :: %Concourse.Pipeline.Job{
+          name: String.t(),
+          plan: steps()
+        }
+
   defmodule Aggregate do
     defstruct [:steps]
+
+    @type t :: %Concourse.Pipeline.Job.Aggregate{
+            steps: Concourse.Pipeline.Job.steps()
+          }
   end
 
   defmodule Do do
     defstruct [:steps]
+
+    @type t :: %Concourse.Pipeline.Job.Do{
+            steps: Concourse.Pipeline.Job.steps()
+          }
   end
 
   defmodule Task do
@@ -14,7 +36,21 @@ defmodule Concourse.Pipeline.Job do
 
     defmodule Config do
       defstruct [:image_resource, :platform, :run]
+
+      @type t :: %Concourse.Pipeline.Job.Task.Config{
+              image_resource: Concourse.Pipeline.ImageResource.t(),
+              platform: String.t(),
+              run: %{
+                path: String.t(),
+                args: list(String.t())
+              }
+            }
     end
+
+    @type t :: %Concourse.Pipeline.Job.Task{
+            task: String.t(),
+            config: Concourse.Pipeline.Job.Task.Config.t()
+          }
 
     def config(%{
           "image_resource" => image_resource,
@@ -37,20 +73,29 @@ defmodule Concourse.Pipeline.Job do
 
   defmodule Get do
     defstruct [:get, :trigger]
+
+    @type t :: %Concourse.Pipeline.Job.Get{
+            get: String.t(),
+            trigger: boolean()
+          }
   end
 
   defmodule Put do
     defstruct [:put]
+
+    @type t :: %Concourse.Pipeline.Job.Put{
+            put: String.t()
+          }
   end
 
-  def plan(nil), do: []
-  def plan([]), do: []
-
+  @spec plan(list(map())) :: steps()
   def plan([step | steps]) do
     [
       step(step) | plan(steps)
     ]
   end
+
+  def plan(_), do: []
 
   defp step(%{"task" => task} = step) do
     %Task{
