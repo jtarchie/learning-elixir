@@ -3,13 +3,16 @@ defmodule Concourse.Pipeline do
 
   defstruct [:jobs, :resources]
 
-  @type t :: %Concourse.Pipeline{
+  @type t :: %__MODULE__{
           jobs: list(Concourse.Pipeline.Job.t()),
           resources: list(Concourse.Pipeline.Resource.t())
         }
 
   @spec parse(String.t()) :: nil | Concourse.Pipeline.t()
   def parse(filename) do
+    # Like many erlang functions, YamlElixir takes a charlist instead of a binary
+    # Dialyzer calls it a string() instead of a binary()
+    filename = String.to_charlist(filename)
     payload = YamlElixir.read_from_file(filename)
 
     case payload do
@@ -32,6 +35,7 @@ defmodule Concourse.Pipeline do
   defp resources([resource | resources]) do
     [
       %Concourse.Pipeline.Resource{
+        # [] can return nil, see https://hexdocs.pm/elixir/Access.html#c:fetch/2, and the summary of the Map.Module
         name: resource["name"],
         type: resource["type"],
         source: resource["source"]
