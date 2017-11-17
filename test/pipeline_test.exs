@@ -9,6 +9,13 @@ defmodule PipelineTest do
     filename = Path.join([__DIR__, "fixtures", "pipeline.yml"])
 
     assert Concourse.Pipeline.parse(filename) == %Pipeline{
+             groups: [
+               %Pipeline.Group{
+                 name: "all",
+                 jobs: ["hello-world"],
+                 resources: ["10s", "git"]
+               }
+             ],
              resources: [
                %Pipeline.Resource{
                  name: "10s",
@@ -39,7 +46,7 @@ defmodule PipelineTest do
                    %Pipeline.Job.Task{
                      task: "do work",
                      config: %Pipeline.Job.Task.Config{
-                       image_resource: %Pipeline.ImageResource{
+                       image_resource: %Pipeline.Job.Task.Config.ImageResource{
                          type: "docker-image",
                          source: %{
                            "repository" => "ubuntu"

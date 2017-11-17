@@ -16,41 +16,143 @@ defmodule Concourse.Pipeline.Job do
         }
 
   defmodule Aggregate do
-    defstruct [:steps]
+    defstruct [
+      :steps,
+      :on_failure,
+      :on_success,
+      :ensure,
+      :try,
+      :timeout,
+      :attempts,
+      :tags
+    ]
 
     @type t :: %Concourse.Pipeline.Job.Aggregate{
-            steps: Concourse.Pipeline.Job.steps()
+            steps: Concourse.Pipeline.Job.steps(),
+            on_failure: Concourse.Pipeline.Job.steps(),
+            on_success: Concourse.Pipeline.Job.steps(),
+            ensure: Concourse.Pipeline.Job.steps(),
+            try: Concourse.Pipeline.Job.steps(),
+            timeout: String.t() | nil,
+            attempts: pos_integer() | nil,
+            tags: list(String.t()) | nil
           }
   end
 
   defmodule Do do
-    defstruct [:steps]
+    defstruct [
+      :steps,
+      :on_failure,
+      :on_success,
+      :ensure,
+      :try,
+      :timeout,
+      :attempts,
+      :tags
+    ]
 
     @type t :: %Concourse.Pipeline.Job.Do{
-            steps: Concourse.Pipeline.Job.steps()
+            steps: Concourse.Pipeline.Job.steps(),
+            on_failure: Concourse.Pipeline.Job.steps(),
+            on_success: Concourse.Pipeline.Job.steps(),
+            ensure: Concourse.Pipeline.Job.steps(),
+            try: Concourse.Pipeline.Job.steps(),
+            timeout: String.t() | nil,
+            attempts: pos_integer() | nil,
+            tags: list(String.t()) | nil
           }
   end
 
   defmodule Task do
-    defstruct [:task, :config, :run]
+    defstruct [
+      :task,
+      :config,
+      :privileged,
+      :params,
+      :image,
+      :input_mapping,
+      :output_mapping,
+      :on_failure,
+      :on_success,
+      :ensure,
+      :try,
+      :timeout,
+      :attempts,
+      :tags,
+      :file
+    ]
+
+    @type t :: %Concourse.Pipeline.Job.Task{
+            task: String.t(),
+            config: Concourse.Pipeline.Job.Task.Config.t(),
+            privileged: boolean() | nil,
+            params: %{required(String.t()) => String.t()} | nil,
+            input_mapping: %{required(String.t()) => String.t()} | nil,
+            output_mapping: %{required(String.t()) => String.t()} | nil,
+            on_failure: Concourse.Pipeline.Job.steps(),
+            on_success: Concourse.Pipeline.Job.steps(),
+            ensure: Concourse.Pipeline.Job.steps(),
+            try: Concourse.Pipeline.Job.steps(),
+            timeout: String.t() | nil,
+            attempts: pos_integer() | nil,
+            tags: list(String.t()) | nil,
+            file: String.t() | nil
+          }
 
     defmodule Config do
-      defstruct [:image_resource, :platform, :run]
+      defstruct [
+        :image_resource,
+        :platform,
+        :run,
+        :rootfs_uri,
+        :inputs,
+        :outputs,
+        :caches,
+        :params
+      ]
+
+      defmodule ImageResource do
+        defstruct [
+          :type,
+          :source,
+          :params,
+          :version
+        ]
+
+        @type t :: %Concourse.Pipeline.Job.Task.Config.ImageResource{
+                type: String.t(),
+                source: map(),
+                params: %{required(String.t()) => String.t()} | nil,
+                version: %{required(String.t()) => String.t()} | nil
+              }
+      end
+
+      defmodule Mapping do
+        defstruct [
+          :name,
+          :path
+        ]
+
+        @type t :: %__MODULE__{
+                name: String.t(),
+                path: String.t() | nil
+              }
+      end
 
       @type t :: %Concourse.Pipeline.Job.Task.Config{
-              image_resource: Concourse.Pipeline.ImageResource.t(),
+              image_resource: Concourse.Pipeline.Job.Task.Config.ImageResource.t(),
               platform: String.t(),
               run: %{
                 path: String.t(),
                 args: list(String.t())
-              }
+              },
+              rootfs_uri: String.t() | nil,
+              inputs: [Concourse.Pipeline.Job.Task.Config.Mapping] | nil,
+              outputs: [Concourse.Pipeline.Job.Task.Config.Mapping] | nil,
+              caches: [String.t()] | nil,
+              params: %{required(String.t()) => String.t()} | nil
             }
     end
-
-    @type t :: %Concourse.Pipeline.Job.Task{
-            task: String.t(),
-            config: Concourse.Pipeline.Job.Task.Config.t()
-          }
 
     def config(%{
           "image_resource" => image_resource,
@@ -59,7 +161,7 @@ defmodule Concourse.Pipeline.Job do
         }) do
       %Config{
         platform: platform,
-        image_resource: %Concourse.Pipeline.ImageResource{
+        image_resource: %Concourse.Pipeline.Job.Task.Config.ImageResource{
           type: image_resource["type"],
           source: image_resource["source"]
         },
@@ -72,19 +174,66 @@ defmodule Concourse.Pipeline.Job do
   end
 
   defmodule Get do
-    defstruct [:get, :trigger]
+    defstruct [
+      :get,
+      :resource,
+      :version,
+      :passed,
+      :params,
+      :trigger,
+      :on_failure,
+      :on_success,
+      :ensure,
+      :try,
+      :timeout,
+      :attempts,
+      :tags
+    ]
 
-    @type t :: %Concourse.Pipeline.Job.Get{
+    @type t :: %__MODULE__{
             get: String.t(),
-            trigger: boolean()
+            resource: String.t() | nil,
+            version: %{required(String.t()) => String.t()} | nil,
+            passed: [String.t()] | nil,
+            params: %{required(String.t()) => String.t()} | nil,
+            trigger: boolean(),
+            on_failure: Concourse.Pipeline.Job.steps(),
+            on_success: Concourse.Pipeline.Job.steps(),
+            ensure: Concourse.Pipeline.Job.steps(),
+            try: Concourse.Pipeline.Job.steps(),
+            timeout: String.t() | nil,
+            attempts: pos_integer() | nil,
+            tags: list(String.t()) | nil
           }
   end
 
   defmodule Put do
-    defstruct [:put]
+    defstruct [
+      :put,
+      :resource,
+      :params,
+      :get_params,
+      :on_failure,
+      :on_success,
+      :ensure,
+      :try,
+      :timeout,
+      :attempts,
+      :tags
+    ]
 
-    @type t :: %Concourse.Pipeline.Job.Put{
-            put: String.t()
+    @type t :: %__MODULE__{
+            put: String.t(),
+            resource: String.t() | nil,
+            params: %{required(String.t()) => String.t()} | nil,
+            get_params: %{required(String.t()) => String.t()} | nil,
+            on_failure: Concourse.Pipeline.Job.steps(),
+            on_success: Concourse.Pipeline.Job.steps(),
+            ensure: Concourse.Pipeline.Job.steps(),
+            try: Concourse.Pipeline.Job.steps(),
+            timeout: String.t() | nil,
+            attempts: pos_integer() | nil,
+            tags: list(String.t()) | nil
           }
   end
 

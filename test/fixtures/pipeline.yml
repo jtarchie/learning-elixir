@@ -26,3 +26,11 @@ jobs:
         args: [ "Hello, world!" ]
   - do:
     - put: 10s
+
+groups:
+- name: all
+  jobs:
+  - hello-world
+  resources:
+  - 10s
+  - git
