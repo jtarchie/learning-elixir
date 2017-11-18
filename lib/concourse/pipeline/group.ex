@@ -7,7 +7,7 @@ defmodule Concourse.Pipeline.Group do
 
   @type t :: %__MODULE__{
           name: String.t(),
-          jobs: list(String.t()) | nil,
-          resources: list(String.t()) | nil
+          jobs: list(String.t()),
+          resources: list(String.t())
         }
 end

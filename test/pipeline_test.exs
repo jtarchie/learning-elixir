@@ -14,18 +14,29 @@ defmodule PipelineTest do
                  name: "all",
                  jobs: ["hello-world"],
                  resources: ["10s", "git"]
-               }
+               },
+               %Pipeline.Group{
+                name: "nothing",
+                jobs: [],
+                resources: []
+              },
              ],
              resources: [
                %Pipeline.Resource{
                  name: "10s",
                  type: "time",
-                 source: %{"interval" => "10s"}
+                 source: %{"interval" => "10s"},
+                 check_every: nil,
+                 tags: [],
+                 webhook_token: nil
                },
                %Pipeline.Resource{
                  name: "git",
                  type: "git",
-                 source: %{"uri" => "https://github.com/concourse/concourse"}
+                 source: %{"uri" => "https://github.com/concourse/concourse"},
+                 check_every: "10m",
+                 tags: ["linux"],
+                 webhook_token: "abcdef"
                }
              ],
              jobs: [

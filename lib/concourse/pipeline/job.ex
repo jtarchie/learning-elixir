@@ -1,5 +1,18 @@
 defmodule Concourse.Pipeline.Job do
-  defstruct [:name, :plan]
+  defstruct [
+    :name,
+    :plan,
+    :serial,
+    :build_logs_to_retain,
+    :serial_groups,
+    :max_in_flight,
+    :public,
+    :disable_manual_trigger,
+    :interruptible,
+    :on_success,
+    :on_failure,
+    :ensure
+  ]
 
   @type step ::
           Concourse.Pipeline.Job.Aggregate.t()
@@ -12,7 +25,17 @@ defmodule Concourse.Pipeline.Job do
 
   @type t :: %Concourse.Pipeline.Job{
           name: String.t(),
-          plan: steps()
+          plan: steps(),
+          serial: boolean | nil,
+          build_logs_to_retain: pos_integer() | nil,
+          serial_groups: [String.t()] | nil,
+          max_in_flight: pos_integer() | nil,
+          public: boolean | nil,
+          disable_manual_trigger: boolean | nil,
+          interruptible: boolean | nil,
+          on_failure: Concourse.Pipeline.Job.steps(),
+          on_success: Concourse.Pipeline.Job.steps(),
+          ensure: Concourse.Pipeline.Job.steps()
         }
 
   defmodule Aggregate do
@@ -35,7 +58,7 @@ defmodule Concourse.Pipeline.Job do
             try: Concourse.Pipeline.Job.steps(),
             timeout: String.t() | nil,
             attempts: pos_integer() | nil,
-            tags: list(String.t()) | nil
+            tags: list(String.t())
           }
   end
 
@@ -59,7 +82,7 @@ defmodule Concourse.Pipeline.Job do
             try: Concourse.Pipeline.Job.steps(),
             timeout: String.t() | nil,
             attempts: pos_integer() | nil,
-            tags: list(String.t()) | nil
+            tags: list(String.t())
           }
   end
 
@@ -95,7 +118,7 @@ defmodule Concourse.Pipeline.Job do
             try: Concourse.Pipeline.Job.steps(),
             timeout: String.t() | nil,
             attempts: pos_integer() | nil,
-            tags: list(String.t()) | nil,
+            tags: list(String.t()),
             file: String.t() | nil
           }
 
@@ -203,7 +226,7 @@ defmodule Concourse.Pipeline.Job do
             try: Concourse.Pipeline.Job.steps(),
             timeout: String.t() | nil,
             attempts: pos_integer() | nil,
-            tags: list(String.t()) | nil
+            tags: list(String.t())
           }
   end
 
@@ -233,7 +256,7 @@ defmodule Concourse.Pipeline.Job do
             try: Concourse.Pipeline.Job.steps(),
             timeout: String.t() | nil,
             attempts: pos_integer() | nil,
-            tags: list(String.t()) | nil
+            tags: list(String.t())
           }
   end
 

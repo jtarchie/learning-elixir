@@ -32,8 +32,8 @@ defmodule Concourse.Pipeline do
     [
       %Concourse.Pipeline.Group{
         name: group["name"],
-        jobs: group["jobs"],
-        resources: group["resources"]
+        jobs: Map.get(group, "jobs", []),
+        resources: Map.get(group, "resources", [])
       }
       | groups(groups)
     ]
@@ -45,10 +45,12 @@ defmodule Concourse.Pipeline do
   defp resources([resource | resources]) do
     [
       %Concourse.Pipeline.Resource{
-        # [] can return nil, see https://hexdocs.pm/elixir/Access.html#c:fetch/2, and the summary of the Map.Module
         name: resource["name"],
         type: resource["type"],
-        source: resource["source"]
+        source: resource["source"],
+        check_every: resource["check_every"],
+        tags: Map.get(resource, "tags", []),
+        webhook_token: resource["webhook_token"]
       }
       | resources(resources)
     ]
@@ -61,7 +63,9 @@ defmodule Concourse.Pipeline do
     [
       %Concourse.Pipeline.Job{
         name: job["name"],
-        plan: Concourse.Pipeline.Job.plan(job["plan"])
+        plan: Concourse.Pipeline.Job.plan(job["plan"]),
+        serial: Map.get(job, "serial", false),
+        build_logs_to_retain: job["build_logs_to_retain"],
       }
       | jobs(jobs)
     ]

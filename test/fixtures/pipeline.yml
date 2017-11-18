@@ -6,6 +6,9 @@ resources:
   type: git
   source:
     uri: https://github.com/concourse/concourse
+  check_every: 10m
+  webhook_token: abcdef
+  tags: ["linux"]
 
 jobs:
 - name: hello-world
@@ -34,3 +37,4 @@ groups:
   resources:
   - 10s
   - git
+- name: nothing
