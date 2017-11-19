@@ -26,13 +26,13 @@ defmodule Concourse.Pipeline.Job do
   @type t :: %Concourse.Pipeline.Job{
           name: String.t(),
           plan: steps(),
-          serial: boolean | nil,
-          build_logs_to_retain: pos_integer() | nil,
-          serial_groups: [String.t()] | nil,
+          serial: boolean,
+          build_logs_to_retain: pos_integer(),
+          serial_groups: [String.t()],
           max_in_flight: pos_integer() | nil,
-          public: boolean | nil,
-          disable_manual_trigger: boolean | nil,
-          interruptible: boolean | nil,
+          public: boolean,
+          disable_manual_trigger: boolean,
+          interruptible: boolean,
           on_failure: Concourse.Pipeline.Job.steps(),
           on_success: Concourse.Pipeline.Job.steps(),
           ensure: Concourse.Pipeline.Job.steps()
@@ -40,7 +40,7 @@ defmodule Concourse.Pipeline.Job do
 
   defmodule Aggregate do
     defstruct [
-      :steps,
+      :aggregate,
       :on_failure,
       :on_success,
       :ensure,
@@ -51,7 +51,7 @@ defmodule Concourse.Pipeline.Job do
     ]
 
     @type t :: %Concourse.Pipeline.Job.Aggregate{
-            steps: Concourse.Pipeline.Job.steps(),
+            aggregate: Concourse.Pipeline.Job.steps(),
             on_failure: Concourse.Pipeline.Job.steps(),
             on_success: Concourse.Pipeline.Job.steps(),
             ensure: Concourse.Pipeline.Job.steps(),
@@ -64,7 +64,7 @@ defmodule Concourse.Pipeline.Job do
 
   defmodule Do do
     defstruct [
-      :steps,
+      :do,
       :on_failure,
       :on_success,
       :ensure,
@@ -75,7 +75,7 @@ defmodule Concourse.Pipeline.Job do
     ]
 
     @type t :: %Concourse.Pipeline.Job.Do{
-            steps: Concourse.Pipeline.Job.steps(),
+            do: Concourse.Pipeline.Job.steps(),
             on_failure: Concourse.Pipeline.Job.steps(),
             on_success: Concourse.Pipeline.Job.steps(),
             ensure: Concourse.Pipeline.Job.steps(),
@@ -108,10 +108,10 @@ defmodule Concourse.Pipeline.Job do
     @type t :: %Concourse.Pipeline.Job.Task{
             task: String.t(),
             config: Concourse.Pipeline.Job.Task.Config.t(),
-            privileged: boolean() | nil,
-            params: %{required(String.t()) => String.t()} | nil,
-            input_mapping: %{required(String.t()) => String.t()} | nil,
-            output_mapping: %{required(String.t()) => String.t()} | nil,
+            privileged: boolean(),
+            params: %{required(String.t()) => String.t()},
+            input_mapping: %{required(String.t()) => String.t()},
+            output_mapping: %{required(String.t()) => String.t()},
             on_failure: Concourse.Pipeline.Job.steps(),
             on_success: Concourse.Pipeline.Job.steps(),
             ensure: Concourse.Pipeline.Job.steps(),
@@ -145,8 +145,8 @@ defmodule Concourse.Pipeline.Job do
         @type t :: %Concourse.Pipeline.Job.Task.Config.ImageResource{
                 type: String.t(),
                 source: map(),
-                params: %{required(String.t()) => String.t()} | nil,
-                version: %{required(String.t()) => String.t()} | nil
+                params: %{required(String.t()) => String.t()},
+                version: %{required(String.t()) => String.t()}
               }
       end
 
@@ -170,10 +170,10 @@ defmodule Concourse.Pipeline.Job do
                 args: list(String.t())
               },
               rootfs_uri: String.t() | nil,
-              inputs: [Concourse.Pipeline.Job.Task.Config.Mapping] | nil,
-              outputs: [Concourse.Pipeline.Job.Task.Config.Mapping] | nil,
-              caches: [String.t()] | nil,
-              params: %{required(String.t()) => String.t()} | nil
+              inputs: [Concourse.Pipeline.Job.Task.Config.Mapping],
+              outputs: [Concourse.Pipeline.Job.Task.Config.Mapping],
+              caches: [String.t()],
+              params: %{required(String.t()) => String.t()}
             }
     end
 
@@ -248,14 +248,14 @@ defmodule Concourse.Pipeline.Job do
     @type t :: %__MODULE__{
             put: String.t(),
             resource: String.t() | nil,
-            params: %{required(String.t()) => String.t()} | nil,
-            get_params: %{required(String.t()) => String.t()} | nil,
+            params: %{required(String.t()) => String.t()},
+            get_params: %{required(String.t()) => String.t()},
             on_failure: Concourse.Pipeline.Job.steps(),
             on_success: Concourse.Pipeline.Job.steps(),
             ensure: Concourse.Pipeline.Job.steps(),
             try: Concourse.Pipeline.Job.steps(),
             timeout: String.t() | nil,
-            attempts: pos_integer() | nil,
+            attempts: pos_integer(),
             tags: list(String.t())
           }
   end
@@ -272,28 +272,79 @@ defmodule Concourse.Pipeline.Job do
   defp step(%{"task" => task} = step) do
     %Task{
       task: task,
-      config: Task.config(step["config"])
+      config: Task.config(step["config"]),
+      privileged: Map.get(step, "privileged", false),
+      params: Map.get(step, "params", %{}),
+      image: step["image"],
+      input_mapping: Map.get(step, "input_mapping", %{}),
+      output_mapping: Map.get(step, "output_mapping", %{}),
+      on_failure: step["on_failure"],
+      on_success: step["on_success"],
+      ensure: step["ensure"],
+      try: step["try"],
+      timeout: step["timeout"],
+      attempts: step["attempts"],
+      tags: Map.get(step, "tags", [])
     }
   end
 
   defp step(%{"get" => get} = step) do
     %Get{
       get: get,
-      trigger: step["trigger"]
+      resource: step["resource"],
+      version: step["version"],
+      passed: Map.get(step, "passed", []),
+      params: Map.get(step, "params", %{}),
+      trigger: step["trigger"],
+      on_failure: step["on_failure"],
+      on_success: step["on_success"],
+      ensure: step["ensure"],
+      try: step["try"],
+      timeout: step["timeout"],
+      attempts: step["attempts"],
+      tags: Map.get(step, "tags", [])
     }
   end
 
-  defp step(%{"put" => put}) do
+  defp step(%{"put" => put} = step) do
     %Put{
-      put: put
+      put: put,
+      resource: step["resource"],
+      params: Map.get(step, "params", %{}),
+      get_params: Map.get(step, "get_params", %{}),
+      on_failure: step["on_failure"],
+      on_success: step["on_success"],
+      ensure: step["ensure"],
+      try: step["try"],
+      timeout: step["timeout"],
+      attempts: step["attempts"],
+      tags: Map.get(step, "tags", [])
     }
   end
 
-  defp step(%{"aggregate" => steps}) do
-    %Aggregate{steps: plan(steps)}
+  defp step(%{"aggregate" => steps} = step) do
+    %Aggregate{
+      aggregate: plan(steps),
+      on_failure: step["on_failure"],
+      on_success: step["on_success"],
+      ensure: step["ensure"],
+      try: step["try"],
+      timeout: step["timeout"],
+      attempts: step["attempts"],
+      tags: Map.get(step, "tags", [])
+    }
   end
 
-  defp step(%{"do" => steps}) do
-    %Do{steps: plan(steps)}
+  defp step(%{"do" => steps} = step) do
+    %Do{
+      do: plan(steps),
+      on_failure: step["on_failure"],
+      on_success: step["on_success"],
+      ensure: step["ensure"],
+      try: step["try"],
+      timeout: step["timeout"],
+      attempts: step["attempts"],
+      tags: Map.get(step, "tags", [])
+    }
   end
 end

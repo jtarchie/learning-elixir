@@ -1,3 +1,9 @@
+resource_types:
+- name: pr
+  type: docker-image
+  source:
+    repository: jtarchie/pr
+
 resources:
 - name: 10s
   type: time
@@ -11,12 +17,23 @@ resources:
   tags: ["linux"]
 
 jobs:
+- name: previous-job
+  plan:
+  - get: git
+  disable_manual_trigger: true
+  interruptible: true
+  public: true
+  serial: true
+  serial_groups: ["a"]
 - name: hello-world
   plan:
   - aggregate:
     - get: 10s
       trigger: true
     - get: git
+      params: { depth: 1 }
+      passed: ["previous-job"]
+      tags: ["windows"]
   - task: do work
     config:
       image_resource:

@@ -23,9 +23,26 @@ defmodule Concourse.Pipeline do
     %Concourse.Pipeline{
       jobs: jobs(payload["jobs"]),
       resources: resources(payload["resources"]),
-      groups: groups(payload["groups"])
+      groups: groups(payload["groups"]),
+      resource_types: resource_types(payload["resource_types"])
     }
   end
+
+  @spec resource_types(list(map()) | nil) :: list(Concourse.Pipeline.ResourceType.t())
+  defp resource_types([type | types]) do
+    [
+      %Concourse.Pipeline.ResourceType{
+        name: type["name"],
+        type: type["type"],
+        source: Map.get(type, "source", %{}),
+        privileged: Map.get(type, "privileged", false),
+        tags: Map.get(type, "tags", [])
+      }
+      | resource_types(types)
+    ]
+  end
+
+  defp resource_types(_), do: []
 
   @spec groups(list(map()) | nil) :: list(Concourse.Pipeline.Group.t())
   defp groups([group | groups]) do
@@ -66,6 +83,14 @@ defmodule Concourse.Pipeline do
         plan: Concourse.Pipeline.Job.plan(job["plan"]),
         serial: Map.get(job, "serial", false),
         build_logs_to_retain: job["build_logs_to_retain"],
+        serial_groups: job["serial_groups"] || [],
+        max_in_flight: job["max_in_flight"],
+        public: Map.get(job, "public", false),
+        disable_manual_trigger: Map.get(job, "disable_manual_trigger", false),
+        interruptible: Map.get(job, "interruptible", false),
+        on_success: job["on_success"],
+        on_failure: job["on_failure"],
+        ensure: job["ensure"]
       }
       | jobs(jobs)
     ]
