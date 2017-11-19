@@ -6,7 +6,7 @@ defmodule PipelineTest do
   alias Concourse.Pipeline
 
   test "supports valid pipeline" do
-    filename = Path.join([__DIR__, "fixtures", "pipeline.yml"])
+    filename = Path.join([__DIR__, "..", "fixtures", "pipeline.yml"])
 
     assert Concourse.Pipeline.parse(filename) == %Pipeline{
              resource_types: [
