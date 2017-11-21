@@ -1,14 +1,14 @@
 require Concourse.Pipeline
 
-defmodule PipelineTest do
+defmodule ParserTest do
   use ExUnit.Case
   doctest Concourse.Pipeline
   alias Concourse.Pipeline
 
-  test "supports valid pipeline" do
+  test "parses a valid pipeline" do
     filename = Path.join([__DIR__, "..", "fixtures", "pipeline.yml"])
 
-    assert Concourse.Pipeline.parse(filename) == %Pipeline{
+    assert Concourse.Pipeline.Parser.parse(filename) == %Pipeline{
              resource_types: [
                %Pipeline.ResourceType{
                  name: "pr",
@@ -23,7 +23,7 @@ defmodule PipelineTest do
              groups: [
                %Pipeline.Group{
                  name: "all",
-                 jobs: ["hello-world"],
+                 jobs: ["previous-job", "hello-world"],
                  resources: ["10s", "git"]
                },
                %Pipeline.Group{

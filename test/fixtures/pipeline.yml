@@ -50,6 +50,7 @@ jobs:
 groups:
 - name: all
   jobs:
+  - previous-job
   - hello-world
   resources:
   - 10s
