@@ -1,5 +1,5 @@
 defmodule PipelineTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Concourse.Pipeline
 
   test "required fields for resources" do

@@ -1,7 +1,7 @@
 require Concourse.Pipeline
 
 defmodule ValidTest do
-  use ExUnit.Case
+  use ExUnit.Case, async: true
   doctest Concourse.Pipeline
 
   test "supports valid pipeline" do
