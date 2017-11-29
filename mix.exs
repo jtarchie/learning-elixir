@@ -26,7 +26,7 @@ defmodule Concourse.Mixfile do
   defp deps do
     [
       {:yaml_elixir, ">= 0.0.0"},
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
+      {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false}
     ]
   end
 end
