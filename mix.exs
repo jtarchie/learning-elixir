@@ -18,6 +18,7 @@ defmodule Concourse.Mixfile do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      applications: [:briefly, :yamerl],
       extra_applications: [:logger]
     ]
   end
@@ -27,7 +28,7 @@ defmodule Concourse.Mixfile do
     [
       {:yaml_elixir, ">= 0.0.0"},
       {:dialyxir, "~> 0.5", only: [:dev, :test], runtime: false},
-      {briefly, "~> 0.3", only: [:dev, :test], runtime: false}
+      {:briefly, "~> 0.3", only: [:dev, :test], runtime: false}
     ]
   end
 end
