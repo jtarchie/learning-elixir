@@ -1,12 +1,12 @@
-defmodule Concourse.Mixfile do
+defmodule Concourse.MixProject do
   use Mix.Project
 
   def project do
     [
       app: :concourse,
       version: "0.1.0",
-      elixir: "~> 1.5",
-      start_permanent: Mix.env == :prod,
+      elixir: "~> 1.6-dev",
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
       dialyzer: [
         plt_add_deps: :transitive,
@@ -19,7 +19,8 @@ defmodule Concourse.Mixfile do
   def application do
     [
       applications: [:briefly, :yamerl],
-      extra_applications: [:logger]
+      extra_applications: [:logger],
+      mod: {Concourse.Application, []}
     ]
   end
 
